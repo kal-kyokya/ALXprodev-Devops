@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Automates the process of making API requests and saving the results to a file
+
+# Makes the request to the API
+# Saves the response to a json file - 'data.json'
+curl https://pokeapi.co/api/v2/pokemon > data.json
+
+# If request fails, logs the error to - 'errors.txt'
+if [$? -ne 1]; then
+    echo "Error occurred while making the request" > errors.txt
+fi
