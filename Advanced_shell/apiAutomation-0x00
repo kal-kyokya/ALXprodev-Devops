@@ -3,9 +3,11 @@
 
 # Makes the request to the API
 # Saves the response to a json file - 'data.json'
-curl https://pokeapi.co/api/v2/pokemon/ > data.json
+curl -s https://pokeapi.co/api/v2/pokemon/ > data.json
 
 # If request fails, logs the error to - 'errors.txt'
-if [ $? -ne 1 ]; then
+if [ $? -ne 0 ]; then
     echo "Error occurred while making the request" > errors.txt
+else
+    echo "API response successfully stored in 'data.json'."
 fi

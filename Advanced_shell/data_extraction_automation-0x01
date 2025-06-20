@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Use 'jq' to extract data from an API response
+
+# Extracts the Pokémon's name, height, weight and type
+# from a JSON file - 'data.json'
+if [ -e data.json ]; then
+   urls=$(jq .results[].url < data.json)
+
+   for url in $urls
+   do
+	api=$(echo $url | awk -F'"' '{print $2}')
+	curl -s $api | jq '.name, .height, .weight, .type'
+   done
+else
+   echo "'data.json' does not exist."
+fi
+
+# Handle any error
+if [ $? -ne 0 ]; then
+   echo "Failed to extract data from 'data.json'" >> errors.txt
+fi
