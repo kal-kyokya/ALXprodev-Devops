@@ -1,37 +1,53 @@
 #!/usr/bin/env bash
-# Automates the retrieval of data for multiple Pokémon and store it in separate files
+# Automates the retrieval of data for multiple Pokémon and stores it in separate files
 # All API calls are made to:
 #     'https://pokeapi.co/api/v2/pokemon/'
 # Some of the expected Pokémon names are:
 #     "bulbasaur", "ivysaur", "venusaur", "charmander", "charmeleon"
 
-# Loops through a list of Pokémon stored in a JSON file
-# Saves each to a separate JSON file named after the Pokémon
-# Handles any potential rate-limiting issues by adding a delay between requests
 if [ -e data.json ]; then
-   urls=$(jq -r '.results[].url' < data.json)
+    urls=$(jq -r '.results[].url' < data.json)
 
-   if [ -d pokemon_data ]; then
-      echo "Files are saved to './pokemon_data'"
-   else
-      mkdir pokemon_data
-      echo "Files are saved to the newly created directory - 'pokemon_data'"
-   fi
+    if [ -d pokemon_data ]; then
+        echo "Files are saved to './pokemon_data'"
+    else
+        mkdir pokemon_data
+        echo "Files are saved to the newly created directory - 'pokemon_data'"
+    fi
 
-   for url in $urls; do
-       api=$(echo "$url")
-       name=$(curl -s $api | jq -r .name)
-       echo "Fetching data for $name"
+    for api in $urls; do
+        retries=0
+        max_retries=3
+        success=0
 
-       curl -s $api > ./pokemon_data/$name.json
+        while [ $retries -lt $max_retries ]; do
+            response=$(curl -s --fail "$api")
+            if [ $? -eq 0 ] && [ -n "$response" ]; then
+                name=$(echo "$response" | jq -r '.name')
 
-       sleep 2.6s
-   done
+                if [ -n "$name" ]; then
+                    echo "Fetching data for $name"
+                    echo "$response" > "./pokemon_data/$name.json"
+                    success=1
+                    break
+                else
+                    echo "Error: Missing name field in API response." >> errors.txt
+                    break
+                fi
+            else
+                echo "Request failed. Retrying... ($((retries + 1)))"
+                retries=$((retries + 1))
+                sleep 2
+            fi
+        done
+
+        if [ $success -ne 1 ]; then
+            echo "Failed to fetch data from $api after 3 attempts." >> errors.txt
+        fi
+
+        sleep 2.6
+    done
 else
-   echo "'data.json' does not exist."
-fi
-
-# Handles any error
-if [ $? -ne 0 ]; then
-   echo "Failed to extract data from 'data.json'" >> errors.txt
+    echo "'data.json' does not exist."
+    echo "Failed to extract data from 'data.json'" >> errors.txt
 fi
