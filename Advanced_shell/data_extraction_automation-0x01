@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Use 'jq' to extract data from an API response
+# Expected output should be of the format:
+# "$name is of type $type, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."
+# Extra commands to consider are: 'curl', 'awk' and 'sed'
+
 
 # Extracts the Pokémon's name, height, weight and type
 # from a JSON file - 'data.json'
