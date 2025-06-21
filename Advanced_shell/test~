@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+array=$(jq ['.count, .next, .previous'] < data.json)

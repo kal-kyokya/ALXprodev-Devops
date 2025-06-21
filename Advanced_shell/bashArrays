@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+array=$(jq '.count, .next, .previous' < data.json)
+counter=1
+
+for data in $array; do
+    echo "[$counter]: $data"
+    counter=$((counter+1))
+    echo "-----------------------------------------------------------------"
+done
