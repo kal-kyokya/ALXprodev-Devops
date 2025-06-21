@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Creates a report that summarizes data from multiple JSON files.
+
+
+# Reads a set of JSON files and extract specific fields
+# Generates a CSV file containing those fields
+# Use 'awk' to compute a couple integer field averages
+
+if [ -e data.json ]; then
+   urls=$(jq -r '.results[].url' < data.json)
+
+   touch pokemon_report.csv
+   echo "Name,Height (m),Weight (kg)" > pokemon_report.csv
+
+   for url in $urls; do
+       api=$(echo "$url")
+       fields=$(curl -s $api | jq -rc ['.name, .height, .weight'])
+
+       values=$(echo "$fields" | sed 's/\]//' | sed 's/\[//')
+       record=$(echo "$values" | awk -F',' '{ printf "%s,%.1f,%.1f", $1, $2 /= 10, $3 /= 10 }')
+       echo $record | sed 's/"//g' >> pokemon_report.csv
+   done
+else
+   echo "Error: Run 'bash apiAutomation-0x00' to create required 'data.json' file"
+fi
+
+if [ -e pokemon_report.csv ]; then
+   avg_h=$(awk -F',' 'NR > 1 { sum += $2 } END { print sum }' pokemon_report.csv)
+   avg_w=$(awk -F',' 'NR > 1 { sum += $3 } END { print sum }' pokemon_report.csv)
+   echo "Average Height: $avg_h m"
+   echo "Average Weight: $avg_w kg"
+fi
+# Handles Errors
+if [ $? -ne 0 ]; then
+   echo "Failed to created a report that summarizes JSON files" >> errors.txt
+fi

@@ -7,3 +7,6 @@ Failed to extract data from 'data.json'
 Failed to extract data from 'data.json'
 Failed to extract data from 'data.json'
 Failed to extract data from 'data.json'
+Failed to created a report that summarizes JSON files
+Failed to created a report that summarizes JSON files
+Failed to created a report that summarizes JSON files
