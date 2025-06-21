@@ -20,16 +20,19 @@ if [ -e data.json ]; then
        record=$(echo "$values" | awk -F',' '{ printf "%s,%.1f,%.1f", $1, $2 /= 10, $3 /= 10 }')
        echo $record | sed 's/"//g' >> pokemon_report.csv
    done
+
+   wait
+
+   if [ -e pokemon_report.csv ]; then
+      avg_h=$(awk -F',' 'NR > 1 { sum += $2 } END { print sum }' pokemon_report.csv)
+      avg_w=$(awk -F',' 'NR > 1 { sum += $3 } END { print sum }' pokemon_report.csv)
+      echo "Average Height: $avg_h m"
+      echo "Average Weight: $avg_w kg"
+   fi
 else
    echo "Error: Run 'bash apiAutomation-0x00' to create required 'data.json' file"
 fi
 
-if [ -e pokemon_report.csv ]; then
-   avg_h=$(awk -F',' 'NR > 1 { sum += $2 } END { print sum }' pokemon_report.csv)
-   avg_w=$(awk -F',' 'NR > 1 { sum += $3 } END { print sum }' pokemon_report.csv)
-   echo "Average Height: $avg_h m"
-   echo "Average Weight: $avg_w kg"
-fi
 # Handles Errors
 if [ $? -ne 0 ]; then
    echo "Failed to created a report that summarizes JSON files" >> errors.txt
