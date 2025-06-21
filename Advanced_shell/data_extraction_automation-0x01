@@ -4,12 +4,15 @@
 # Extracts the Pokémon's name, height, weight and type
 # from a JSON file - 'data.json'
 if [ -e data.json ]; then
-   urls=$(jq .results[].url < data.json)
+   urls=$(jq -r .results[].url < data.json)
 
-   for url in $urls
-   do
-	api=$(echo $url | awk -F'"' '{print $2}')
-	curl -s $api | jq '.name, .height, .weight, .type'
+   for url in $urls; do
+	api=$(echo $url)
+	pok_info=$(curl -s $api | jq -rc '.name, .height, .weight, .types[0].type.name')
+	echo $pok_info | awk -F' ' '{
+	     height_m = $2 / 10;
+	     printf "%s is of type %s, weighs %skg, and is %.1fm tall.\n", $1, $4, $3, height_m
+	}'
    done
 else
    echo "'data.json' does not exist."
